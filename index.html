@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプル支出管理アプリ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>支出管理アプリ</h1>
+    </header>
+
+    <main class="container">
+        <section class="card input-section">
+            <h2>支出の記録</h2>
+            <form id="expense-form">
+                <div class="form-group">
+                    <label for="amount">金額 (必須)</label>
+                    <input type="number" id="amount" required min="1" placeholder="例: 1000">
+                </div>
+                <div class="form-group">
+                    <label for="date">支出日 (必須)</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">カテゴリ</label>
+                    <select id="category">
+                        <option value="食費">食費</option>
+                        <option value="交通費">交通費</option>
+                        <option value="娯楽費">娯楽費</option>
+                        <option value="その他">その他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="memo">メモ (任意)</label>
+                    <input type="text" id="memo" placeholder="例: ランチ代">
+                </div>
+                <button type="submit" id="save-btn">保存する</button>
+            </form>
+        </section>
+
+        <section class="card summary-section">
+            <h2>今月の集計</h2>
+            <div class="total-amount">合計: <span id="monthly-total">0</span> 円</div>
+            <div class="chart-container">
+                <canvas id="category-chart"></canvas>
+            </div>
+        </section>
+
+        <section class="card list-section">
+            <h2>支出履歴</h2>
+            <div class="search-box">
+                <input type="text" id="search-keyword" placeholder="メモで検索...">
+                <select id="filter-category">
+                    <option value="all">すべてのカテゴリ</option>
+                    <option value="食費">食費</option>
+                    <option value="交通費">交通費</option>
+                    <option value="娯楽費">娯楽費</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+            <ul id="expense-list">
+                </ul>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+:root {
+    --primary-color: #4caf50;
+    --bg-color: #f5f5f5;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --danger-color: #f44336;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* PC等広い画面用の2カラムレイアウト */
+@media (min-width: 768px) {
+    .container {
+        grid-template-columns: 1fr 1fr;
+    }
+    .list-section {
+        grid-column: span 2;
+    }
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+h2 {
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--bg-color);
+    padding-bottom: 0.5rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+button {
+    width: 100%;
+    padding: 0.7rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.total-amount {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 200px;
+    width: 200px;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#expense-list {
+    list-style: none;
+}
+
+.expense-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.expense-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.expense-meta {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.delete-btn {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    width: auto;
+    font-size: 0.8rem;
+}
