@@ -36,7 +36,6 @@ header {
     gap: 1.5rem;
 }
 
-/* PC等広い画面用の2カラムレイアウト */
 @media (min-width: 768px) {
     .container {
         grid-template-columns: 1fr 1fr;
@@ -106,8 +105,9 @@ button:hover {
 .chart-container {
     position: relative;
     margin: auto;
-    height: 200px;
-    width: 200px;
+    height: 220px;
+    width: 100%;
+    max-width: 220px;
 }
 
 .search-box {

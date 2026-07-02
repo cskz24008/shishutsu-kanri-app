@@ -3,103 +3,121 @@ let expenses = JSON.parse(localStorage.getItem('expenses')) || [];
 let chartInstance = null;
 
 // DOM要素の取得
-const expenseForm = document.getElementById('expense-form');
-const amountInput = document.getElementById('amount');
-const dateInput = document.getElementById('date');
-const categoryInput = document.getElementById('category');
-const memoInput = document.getElementById('memo');
-const expenseList = document.getElementById('expense-list');
-const monthlyTotalText = document.getElementById('monthly-total');
-const searchKeyword = document.getElementById('search-keyword');
-const filterCategory = document.getElementById('filter-category');
+let expenseForm, amountInput, dateInput, categoryInput, memoInput, expenseList, monthlyTotalText, searchKeyword, filterCategory, noDataMessage;
 
-// --- アプリ初期化 ---
-document.addEventListener('DOMContentLoaded', () => {
+// アプリ起動時の初期化処理
+function initApp() {
+    expenseForm = document.getElementById('expense-form');
+    amountInput = document.getElementById('amount');
+    dateInput = document.getElementById('date');
+    categoryInput = document.getElementById('category');
+    memoInput = document.getElementById('memo');
+    expenseList = document.getElementById('expense-list');
+    monthlyTotalText = document.getElementById('monthly-total');
+    searchKeyword = document.getElementById('search-keyword');
+    filterCategory = document.getElementById('filter-category');
+    noDataMessage = document.getElementById('no-data-message');
+
     // 日付の初期値を当日に設定
-    dateInput.value = new Date().toISOString().split('T')[0];
-    updateUI();
-});
+    if (dateInput) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+    }
 
-// --- イベントリスナー ---
-// 1. 支出の登録
-expenseForm.addEventListener('submit', (e) => {
+    // イベントリスナーの登録
+    if (expenseForm) {
+        expenseForm.addEventListener('submit', handleFormSubmit);
+    }
+    if (searchKeyword) {
+        searchKeyword.addEventListener('input', updateUI);
+    }
+    if (filterCategory) {
+        filterCategory.addEventListener('change', updateUI);
+    }
+
+    // 初回UI描画
+    updateUI();
+}
+
+// フォーム送信時の処理 (登録)
+function handleFormSubmit(e) {
     e.preventDefault();
 
-    // バリデーション（金額チェック）
     const amount = parseInt(amountInput.value);
     if (isNaN(amount) || amount <= 0) {
         alert('正しい金額を入力してください。');
         return;
     }
 
-    // 新しいオブジェクト（データ型）の作成
     const newExpense = {
-        id: Date.now().toString(), // 簡易的な個別ID
+        id: Date.now().toString(),
         amount: amount,
         date: dateInput.value,
         category: categoryInput.value,
         memo: memoInput.value.trim()
     };
 
-    // 配列へ追加して永続化
     expenses.push(newExpense);
     saveToLocalStorage();
     
-    // フォームのリセット（日付は残す）
+    // 入力欄のクリア
     amountInput.value = '';
     memoInput.value = '';
     
     updateUI();
-});
+}
 
-// 2. 検索・フィルターイベント
-searchKeyword.addEventListener('input', updateUI);
-filterCategory.addEventListener('change', updateUI);
-
-// --- データの永続化 (リポジトリ機能) ---
+// データの永続化
 function saveToLocalStorage() {
     localStorage.setItem('expenses', JSON.stringify(expenses));
 }
 
-// 3. データの削除
-function deleteExpense(id) {
+// データの削除 (グローバルスコープから呼べるようにwindowオブジェクトに紐付け)
+window.deleteExpense = function(id) {
     expenses = expenses.filter(expense => expense.id !== id);
     saveToLocalStorage();
     updateUI();
-}
+};
 
-// --- UIの更新（描画と集計） ---
+// UIの更新（一覧表示・集計・検索フィルタ）
 function updateUI() {
-    // 検索・フィルタリング処理
-    const keyword = searchKeyword.value.toLowerCase();
-    const selectedCategory = filterCategory.value;
+    const keyword = searchKeyword ? searchKeyword.value.toLowerCase() : '';
+    const selectedCategory = filterCategory ? filterCategory.value : 'all';
 
+    // フィルタリング処理
     const filteredExpenses = expenses.filter(exp => {
-        const matchesKeyword = exp.memo.toLowerCase().includes(keyword);
+        const matchesKeyword = exp.memo ? exp.memo.toLowerCase().includes(keyword) : keyword === '';
         const matchesCategory = selectedCategory === 'all' || exp.category === selectedCategory;
         return matchesKeyword && matchesCategory;
     });
 
     // 履歴リストの描画
-    expenseList.innerHTML = '';
-    filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(exp => {
-        const li = document.createElement('li');
-        li.className = 'expense-item';
-        li.innerHTML = `
-            <div class="expense-info">
-                <span><strong>${exp.category}</strong>: ${exp.amount.toLocaleString()} 円</span>
-                <span class="expense-meta">${exp.date} ${exp.memo ? `| ${exp.memo}` : ''}</span>
-            </div>
-            <button class="delete-btn" onclick="deleteExpense('${exp.id}')">削除</button>
-        `;
-        expenseList.appendChild(li);
-    });
+    if (expenseList) {
+        expenseList.innerHTML = '';
+        
+        // 日付の新しい順に並び替え
+        const sorted = [...filteredExpenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        sorted.forEach(exp => {
+            const li = document.createElement('li');
+            li.className = 'expense-item';
+            li.innerHTML = `
+                <div class="expense-info">
+                    <span><strong>${exp.category}</strong>: ${exp.amount.toLocaleString()} 円</span>
+                    <span class="expense-meta">${exp.date} ${exp.memo ? `| ${exp.memo}` : ''}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteExpense('${exp.id}')">削除</button>
+            `;
+            expenseList.appendChild(li);
+        });
+    }
 
-    // 集計ロジック (BudgetCalculatorに相当)
+    // 金額の集計
     const total = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    monthlyTotalText.textContent = total.toLocaleString();
+    if (monthlyTotalText) {
+        monthlyTotalText.textContent = total.toLocaleString();
+    }
 
-    // カテゴリ別集計の計算
+    // カテゴリ別集計
     const categoryTotals = { '食費': 0, '交通費': 0, '娯楽費': 0, 'その他': 0 };
     filteredExpenses.forEach(exp => {
         if (categoryTotals[exp.category] !== undefined) {
@@ -111,21 +129,33 @@ function updateUI() {
     updateChart(categoryTotals);
 }
 
-// --- グラフの描画処理 ---
+// グラフの描画処理
 function updateChart(categoryTotals) {
-    const ctx = document.getElementById('category-chart').getContext('2d');
+    const canvas = document.getElementById('category-chart');
+    if (!canvas) return;
     
-    // 既存のグラフがあれば一度破棄する
+    const ctx = canvas.getContext('2d');
+    
+    // 既存のグラフがあれば一度確実に破棄
     if (chartInstance) {
         chartInstance.destroy();
+        chartInstance = null;
     }
 
-    // データが全て0ならグラフを表示しない
+    // データが全て0（未登録）の場合の処理
     const hasData = Object.values(categoryTotals).some(val => val > 0);
-    if (!hasData) return;
+    if (!hasData) {
+        canvas.style.display = 'none';
+        if (noDataMessage) noDataMessage.style.display = 'block';
+        return;
+    }
+
+    // データがある場合はグラフを表示
+    canvas.style.display = 'block';
+    if (noDataMessage) noDataMessage.style.display = 'none';
 
     chartInstance = new Chart(ctx, {
-        type: 'doughnut', // 円（ドーナツ）グラフ
+        type: 'doughnut',
         data: {
             labels: Object.keys(categoryTotals),
             datasets: [{
@@ -136,8 +166,15 @@ function updateChart(categoryTotals) {
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false } // スペース節約のため凡例は非表示
+                legend: { display: false }
             }
         }
     });
+}
+
+// DOMの読み込みが完了したらアプリを起動
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
 }
